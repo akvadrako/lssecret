@@ -50,6 +50,7 @@ void show() {
 		&err);
 	handle_error(err, true);
 	show_service(srvc);
+	std::cout << "Done\n";
 	g_object_unref(srvc);
 }
 
@@ -100,8 +101,23 @@ void show_secret(SecretItem *item) {
 	if (val != NULL) {
 		gsize len;
 		const gchar *value = secret_value_get(val, &len);
+
 		// value is not nessesarily null terminated
-		std::printf("Secret:\t%.*s\n", len, value);
+                bool hex = false;
+                for(int i = 0; i < len; ++i) {
+                    if(value[i] < 0x20 || value[i] > 0x7f)
+                        if(i != len || value[i] != 0)
+                            hex = true;
+                }
+
+                if(!hex) {
+		    std::printf("Secret:\t%.*s\n", (int)len, value);
+                } else {
+		    std::printf("Secret:\t0x");
+                    for(int i = 0; i < len; ++i)
+		        std::printf("%x", value[i]);
+		    std::printf("\n");
+                }
 		secret_value_unref(val);
 	}
 }
